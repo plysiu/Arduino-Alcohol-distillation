@@ -63,6 +63,12 @@ void setupRelays(){
     setupRelay(i);
   }
 }
+
+void turnOffAllRelays(){
+  for (int i = 0; i < NUMBER_OF_RELAYS; i++){
+    setRelay(i, RELAY_OFF);
+  }
+}
 #include <Button.h>
 /*
  * Tact Switch -> 7
@@ -70,11 +76,7 @@ void setupRelays(){
 const int STATE_BUTTON_PIN = 7;
 Button button = Button(STATE_BUTTON_PIN, PULLUP);
 
-void setup(){
-  lcd.begin(LCD_COLS, LCD_ROWS);
-  sensors.begin();
-  setupRelays();
-}
+
 
 int stage = 0;
 void checkButtonStage(){
@@ -82,14 +84,47 @@ void checkButtonStage(){
     stage++;
   }
 }
+
+void stage_0(){  
+  turnOffAllRelays();
+  lcd.setCursor(0, 0);
+  lcd.print("Push the button");
+  lcd.setCursor(0,1);
+  lcd.print("to start.");
+}
+
+void stage_1(){
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(sensors.getTempCByIndex(0));
+
+}
+
+
+void setup(){
+  lcd.begin(LCD_COLS, LCD_ROWS);
+  sensors.begin();
+  setupRelays();
+}
+
 void loop(){
   checkButtonStage();
   sensors.requestTemperatures();
-  lcd.setCursor(0,0);
-  lcd.print(stage);
-  lcd.print(" ");
-  lcd.print(sensors.getTempCByIndex(0));
+  switch(stage){
+  case 0:
+    stage_0();
+    break;
+     case 1:
+    stage_1();
+    break;
+  }
+
+
+
+
 }
+
+
 
 
 
