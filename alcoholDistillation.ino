@@ -132,7 +132,7 @@ void stage_0(){
   lcd.print("to start.");
 }
 
-const float METHANOL_BOILING_POINT = 25.6;
+const float METHANOL_BOILING_POINT = 64.6;
 void stage_1(){
   float temperature = sensors.getTempCByIndex(0);
 
@@ -153,6 +153,33 @@ void stage_2(){
   }
   else{
     if(temperature > METHANOL_BOILING_POINT + 1){
+      turnOffAllRelays();
+    }
+  }
+  lcdInformation(stage, temperature);
+}
+
+const float ETHANOL_BOILING_POINT = 78.38;
+void stage_3(){
+  float temperature = sensors.getTempCByIndex(0);
+
+  if(temperature < ETHANOL_BOILING_POINT){
+    turnOnAllRelays();
+  }
+  else{
+    stage++;
+  }
+  lcdInformation(stage, temperature);
+}
+
+void stage_4(){
+  float temperature = sensors.getTempCByIndex(0);
+
+  if(temperature <  ETHANOL_BOILING_POINT - 1){
+    turnOnOneRelay();
+  }
+  else{
+    if(temperature > ETHANOL_BOILING_POINT + 1){
       turnOffAllRelays();
     }
   }
@@ -181,8 +208,15 @@ void loop(){
   case 2:
     stage_2();
     break;
+  case 3:
+    stage_3();
+    break;
+  case 4:
+    stage_4();
+    break;
   }
 }
+
 
 
 
