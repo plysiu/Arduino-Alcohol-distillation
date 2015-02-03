@@ -37,7 +37,7 @@ int channelRelayPorts[] = {
   IN0,IN1,IN2,IN3};
 boolean channelRelayStates[] = {
   LOW,LOW,LOW,LOW};
-
+int relaysOnCounter = 0;
 boolean getRelayState(const int index){
   return channelRelayStates[index];
 }
@@ -49,6 +49,9 @@ void setRelayState(const int index, const int state){
 void setRelay(const int index,const boolean state){
   if(getRelayState(index) != state){
     digitalWrite(channelRelayPorts[index], state);
+    if(state == RELAY_ON){
+      relaysOnCounter++;
+    }
     setRelayState(index, state);
   }
 }
@@ -75,6 +78,26 @@ void turnOnAllRelays(){
     setRelay(i, RELAY_ON);
   }
 }
+
+int getNumberOfOnRelays(){
+  int sum = 0; 
+
+  for (int i = 0; i < NUMBER_OF_RELAYS; i++){
+
+    if(getRelayState(i) == RELAY_ON){
+      sum++;
+    }
+  }
+  return sum;
+}
+
+void turnOnOneRelay(){
+  if(getNumberOfOnRelays() != 1 ){
+    turnOffAllRelays();
+    setRelay(relaysOnCounter % NUMBER_OF_RELAYS, RELAY_ON);
+  }
+}
+
 #include <Button.h>
 /*
  * Tact Switch -> 7
@@ -91,6 +114,16 @@ void checkButtonStage(){
   }
 }
 
+void lcdInformation(int s, float t){
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Stage:");
+  lcd.print(s);
+  lcd.setCursor(0, 1);
+  lcd.print("Temp:");
+  lcd.print(t);
+}
+
 void stage_0(){  
   turnOffAllRelays();
   lcd.setCursor(0, 0);
@@ -99,51 +132,31 @@ void stage_0(){
   lcd.print("to start.");
 }
 
-const float METHANOL_BOILING_POINT = 64.6;
+const float METHANOL_BOILING_POINT = 25.6;
 void stage_1(){
   float temperature = sensors.getTempCByIndex(0);
 
-  if(temperature <  METHANOL_BOILING_POINT - 1){
+  if(temperature < METHANOL_BOILING_POINT){
     turnOnAllRelays();
   }
   else{
-    if(temperature < METHANOL_BOILING_POINT + 1){
-      turnOffAllRelays();
-    }
-    else{
-      turnOnAllRelays();
-    }
+    stage++;
   }
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Stage:");
-  lcd.print(stage);
-  lcd.setCursor(0, 1);
-  lcd.print("Temp:");
-  lcd.print(temperature);
+  lcdInformation(stage, temperature);
 }
 
 void stage_2(){
   float temperature = sensors.getTempCByIndex(0);
 
   if(temperature <  METHANOL_BOILING_POINT - 1){
-    turnOnAllRelays();
+    turnOnOneRelay();
   }
   else{
-    if(temperature < METHANOL_BOILING_POINT + 1){
+    if(temperature > METHANOL_BOILING_POINT + 1){
       turnOffAllRelays();
     }
-    else{
-      turnOnAllRelays();
-    }
   }
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Stage:");
-  lcd.print(stage);
-  lcd.setCursor(0, 1);
-  lcd.print("Temp:");
-  lcd.print(temperature);
+  lcdInformation(stage, temperature);
 }
 
 
@@ -170,6 +183,10 @@ void loop(){
     break;
   }
 }
+
+
+
+
 
 
 
