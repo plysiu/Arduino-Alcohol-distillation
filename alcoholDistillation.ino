@@ -103,13 +103,20 @@ void turnOnOneRelay(){
 /*
  * Tact Switch -> 7
  */
-const int STAGE_BUTTON_PIN = 7;
-Button button = Button(STAGE_BUTTON_PIN, PULLUP);
+const int STAGE_UP_BUTTON_PIN = 7;
+const int STAGE_DOWN_BUTTON_PIN = 8;
+
+Button stageUp = Button(STAGE_UP_BUTTON_PIN, PULLUP);
+
+Button stageDown = Button(STAGE_DOWN_BUTTON_PIN, PULLUP);
 
 int stage = 0;
 void checkButtonStage(){
-  if(button.uniquePress()){
+  if(stageUp.uniquePress()){
     stage++;
+  }
+  if(stageDown.uniquePress()  &&  stage > 0){
+    stage--;
   }
 }
 
@@ -141,7 +148,7 @@ void stage_1(){
   else{
     stage++;
   }
-  
+
   lcdInformation(stage, temperature);
 }
 
@@ -243,7 +250,7 @@ void loop(){
   case 4:
     stage_4();
     break;
-    case 5:
+  case 5:
     stage_5();
     break;
   case 6:
@@ -254,6 +261,7 @@ void loop(){
     break;
   }
 }
+
 
 
 
