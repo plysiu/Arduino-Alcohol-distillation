@@ -37,8 +37,6 @@ int channelRelayPorts[] = {
   IN0,IN1,IN2,IN3};
 boolean channelRelayStates[] = {
   LOW,LOW,LOW,LOW};
-  
- 
 
 boolean getRelayState(const int index){
   return channelRelayStates[index];
@@ -65,6 +63,12 @@ void setupRelays(){
     setupRelay(i);
   }
 }
+#include <Button.h>
+/*
+ * Tact Switch -> 7
+ */
+const int STATE_BUTTON_PIN = 7;
+Button button = Button(STATE_BUTTON_PIN, PULLUP);
 
 void setup(){
   lcd.begin(LCD_COLS, LCD_ROWS);
@@ -72,15 +76,25 @@ void setup(){
   setupRelays();
 }
 
+int stage = 0;
+void checkButtonStage(){
+  if(button.uniquePress()){
+    stage++;
+  }
+}
 void loop(){
-  
-  if(getRelayState(0) == RELAY_OFF)
-    setRelay(0,RELAY_ON);
-  
+  checkButtonStage();
   sensors.requestTemperatures();
   lcd.setCursor(0,0);
+  lcd.print(stage);
+  lcd.print(" ");
   lcd.print(sensors.getTempCByIndex(0));
 }
+
+
+
+
+
 
 
 
