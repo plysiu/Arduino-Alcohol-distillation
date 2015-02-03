@@ -31,6 +31,7 @@ const int IN1 = 3;
 const int IN2 = 4;
 const int IN3 = 5; 
 const int NUMBER_OF_RELAYS = 4;
+
 const boolean RELAY_ON = LOW;
 const boolean RELAY_OFF = HIGH;
 int channelRelayPorts[] = {
@@ -102,10 +103,8 @@ void turnOnOneRelay(){
 /*
  * Tact Switch -> 7
  */
-const int STATE_BUTTON_PIN = 7;
-Button button = Button(STATE_BUTTON_PIN, PULLUP);
-
-
+const int STAGE_BUTTON_PIN = 7;
+Button button = Button(STAGE_BUTTON_PIN, PULLUP);
 
 int stage = 0;
 void checkButtonStage(){
@@ -142,6 +141,7 @@ void stage_1(){
   else{
     stage++;
   }
+  
   lcdInformation(stage, temperature);
 }
 
@@ -186,6 +186,35 @@ void stage_4(){
   lcdInformation(stage, temperature);
 }
 
+const float THIRD_BOILING_POINT = 83;
+void stage_5(){
+  float temperature = sensors.getTempCByIndex(0);
+
+  if(temperature < THIRD_BOILING_POINT){
+    turnOnAllRelays();
+  }
+  else{
+    stage++;
+  }
+  lcdInformation(stage, temperature);
+}
+
+void stage_6(){
+  float temperature = sensors.getTempCByIndex(0);
+
+  if(temperature <  THIRD_BOILING_POINT - 1){
+    turnOnOneRelay();
+  }
+  else{
+    if(temperature > THIRD_BOILING_POINT + 1){
+      turnOffAllRelays();
+    }
+  }
+  lcdInformation(stage, temperature);
+}
+
+
+
 
 
 
@@ -214,10 +243,17 @@ void loop(){
   case 4:
     stage_4();
     break;
+    case 5:
+    stage_5();
+    break;
+  case 6:
+    stage_6();
+    break;
+  default :
+    turnOffAllRelays();
+    break;
   }
 }
-
-
 
 
 
