@@ -69,6 +69,12 @@ void turnOffAllRelays(){
     setRelay(i, RELAY_OFF);
   }
 }
+
+void turnOnAllRelays(){
+  for (int i = 0; i < NUMBER_OF_RELAYS; i++){
+    setRelay(i, RELAY_ON);
+  }
+}
 #include <Button.h>
 /*
  * Tact Switch -> 7
@@ -93,12 +99,54 @@ void stage_0(){
   lcd.print("to start.");
 }
 
+const float METHANOL_BOILING_POINT = 64.6;
 void stage_1(){
+  float temperature = sensors.getTempCByIndex(0);
+
+  if(temperature <  METHANOL_BOILING_POINT - 1){
+    turnOnAllRelays();
+  }
+  else{
+    if(temperature < METHANOL_BOILING_POINT + 1){
+      turnOffAllRelays();
+    }
+    else{
+      turnOnAllRelays();
+    }
+  }
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print(sensors.getTempCByIndex(0));
-
+  lcd.print("Stage:");
+  lcd.print(stage);
+  lcd.setCursor(0, 1);
+  lcd.print("Temp:");
+  lcd.print(temperature);
 }
+
+void stage_2(){
+  float temperature = sensors.getTempCByIndex(0);
+
+  if(temperature <  METHANOL_BOILING_POINT - 1){
+    turnOnAllRelays();
+  }
+  else{
+    if(temperature < METHANOL_BOILING_POINT + 1){
+      turnOffAllRelays();
+    }
+    else{
+      turnOnAllRelays();
+    }
+  }
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Stage:");
+  lcd.print(stage);
+  lcd.setCursor(0, 1);
+  lcd.print("Temp:");
+  lcd.print(temperature);
+}
+
+
 
 
 void setup(){
@@ -114,15 +162,17 @@ void loop(){
   case 0:
     stage_0();
     break;
-     case 1:
+  case 1:
     stage_1();
     break;
+  case 2:
+    stage_2();
+    break;
   }
-
-
-
-
 }
+
+
+
 
 
 
