@@ -36,8 +36,10 @@ const int NUMBER_OF_RELAYS = 4;
 const boolean RELAY_ON = LOW;
 const boolean RELAY_OFF = HIGH;
 
-int channelRelayPorts[NUMBER_OF_RELAYS] = { IN0, IN1, IN2, IN3 };
-boolean channelRelayStates[NUMBER_OF_RELAYS] = { RELAY_OFF, RELAY_OFF, RELAY_OFF, RELAY_OFF };
+int channelRelayPorts[NUMBER_OF_RELAYS] = { 
+  IN0, IN1, IN2, IN3 };
+boolean channelRelayStates[NUMBER_OF_RELAYS] = { 
+  RELAY_OFF, RELAY_OFF, RELAY_OFF, RELAY_OFF };
 int relaysOnCounter = 0;
 
 boolean getRelayState(const int index){
@@ -116,113 +118,45 @@ void checkButtonStage(){
   }
   if(stageDown.uniquePress()){
     stage--;
- }
+  }
 }
 
-void lcdInformation(int s, float t){
+void lcdInformation(float t){
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Stage:");
-  lcd.print(s);
+  lcd.print(stage);
   lcd.setCursor(0, 1);
   lcd.print("Temp:");
   lcd.print(t);
-    lcd.setCursor(12, 1);
-    for(int i = 0; i < NUMBER_OF_RELAYS; i++){
-          lcd.print(!getRelayState(i));
-    }
-
-
+  lcd.setCursor(12, 1);
+  for(int i = 0; i < NUMBER_OF_RELAYS; i++){
+    lcd.print(!getRelayState(i));
+  }
 }
 
-void stage_0(){  
-  turnOffAllRelays();
-  lcd.setCursor(0, 0);
-  lcd.print("Push the button");
-  lcd.setCursor(0,1);
-  lcd.print("to start. s:");
-  lcd.print(stage);
-}
 const int GRADIENT = 1;
 const float METHANOL_BOILING_POINT = 64.6;
-void stage_1(){
-  float temperature = sensors.getTempCByIndex(0);
-
-  if(temperature < METHANOL_BOILING_POINT){
-    turnOnAllRelays();
-  }
-  else{
-    stage++;
-  }
-  lcdInformation(stage, temperature);
-}
-
-void stage_2(){
-  float temperature = sensors.getTempCByIndex(0);
-
-  if(temperature <  METHANOL_BOILING_POINT - GRADIENT){
-    turnOnOneRelay();
-  }
-  else{
-    if(temperature > METHANOL_BOILING_POINT + GRADIENT){
-      turnOffAllRelays();
-    }
-  }
-  lcdInformation(stage, temperature);
-}
-
 const float ETHANOL_BOILING_POINT = 78.38;
-void stage_3(){
-  float temperature = sensors.getTempCByIndex(0);
-
-  if(temperature < ETHANOL_BOILING_POINT){
-    turnOnAllRelays();
-  }
-  else{
-    stage++;
-  }
-  lcdInformation(stage, temperature);
-}
-
-void stage_4(){
-  float temperature = sensors.getTempCByIndex(0);
-
-  if(temperature <  ETHANOL_BOILING_POINT - GRADIENT){
-    turnOnOneRelay();
-  }
-  else{
-    if(temperature > ETHANOL_BOILING_POINT + GRADIENT){
-      turnOffAllRelays();
-    }
-  }
-  lcdInformation(stage, temperature);
-}
-
 const float THIRD_BOILING_POINT = 83;
-void stage_5(){
-  float temperature = sensors.getTempCByIndex(0);
 
-  if(temperature < THIRD_BOILING_POINT){
+void heating(const float currentTemperature, const float temperatureTreshold){
+  if(currentTemperature < temperatureTreshold){
     turnOnAllRelays();
   }
   else{
     stage++;
   }
-  lcdInformation(stage, temperature);
 }
-
-void stage_6(){
-  float temperature = sensors.getTempCByIndex(0);
-
-  if(temperature <  THIRD_BOILING_POINT - GRADIENT){
+void maintainingTheTemperature(const float currentTemperature, const float temperatureToMaintain){
+  if(currentTemperature <  temperatureToMaintain - GRADIENT){
     turnOnOneRelay();
   }
   else{
-    if(temperature > THIRD_BOILING_POINT + GRADIENT){
+    if(currentTemperature > temperatureToMaintain + GRADIENT){
       turnOffAllRelays();
     }
   }
-  lcdInformation(stage, temperature);
 }
 
 void setup(){
@@ -230,39 +164,43 @@ void setup(){
   sensors.begin();
   setupRelays();
   turnOffAllRelays();
-//  Serial.begin(9600);
 }
+float temperature = 0;
 
 void loop(){
+
   checkButtonStage();
   sensors.requestTemperatures();
+  temperature = sensors.getTempCByIndex(0);
   switch(stage){
   case 0:
-    stage_0();
+    turnOffAllRelays();
     break;
   case 1:
-    stage_1();
+    heating(temperature, METHANOL_BOILING_POINT);
     break;
   case 2:
-    stage_2();
+    maintainingTheTemperature(temperature, METHANOL_BOILING_POINT);
     break;
   case 3:
-    stage_3();
+    heating(temperature, ETHANOL_BOILING_POINT);
     break;
   case 4:
-    stage_4();
+    maintainingTheTemperature(temperature, ETHANOL_BOILING_POINT);
     break;
   case 5:
-      stage_5();
+    heating(temperature, THIRD_BOILING_POINT);
     break;
   case 6:
-    stage_6();
+    maintainingTheTemperature(temperature, THIRD_BOILING_POINT);
     break;
   default :
     turnOffAllRelays();
     break;
   }
+  lcdInformation(temperature);
 }
+
 
 
 
